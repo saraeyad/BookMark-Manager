@@ -20,4 +20,3 @@ export const ROUTES = {
   BOOKMARKS: "/bookmarks",
   BOOKMARKS_ARCHIVE: "/bookmarks/archive",
 } as const;
-

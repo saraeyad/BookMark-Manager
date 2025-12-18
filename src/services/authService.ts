@@ -1,22 +1,32 @@
-import { LoginType, SignupType, AuthUserData } from "@/types";
+import { LoginType, SignupType, AuthUserData } from "@/schemas";
+import { storage } from "@/utils/storage";
+import { apiRequest } from "@/utils/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 // Development mode - set to true to use mock authentication (no backend needed)
 const DEV_MODE = true;
 
+const STORAGE_KEYS = {
+  USERS: "dev_users",
+  TOKEN: "token",
+  USER: "user",
+} as const;
+
 // Helper to generate a mock token
 const generateMockToken = () => `mock-token-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
 // Helper to get stored users from localStorage (for dev mode)
 const getStoredUsers = (): Array<{ email: string; password: string; fullName: string }> => {
-  const users = localStorage.getItem("dev_users");
-  return users ? JSON.parse(users) : [];
+  return storage.getItem<Array<{ email: string; password: string; fullName: string }>>(
+    STORAGE_KEYS.USERS,
+    []
+  ) || [];
 };
 
 // Helper to save users to localStorage (for dev mode)
 const saveStoredUsers = (users: Array<{ email: string; password: string; fullName: string }>) => {
-  localStorage.setItem("dev_users", JSON.stringify(users));
+  storage.setItem(STORAGE_KEYS.USERS, users);
 };
 
 export const authService = {
@@ -128,19 +138,18 @@ export const authService = {
   async getSession() {
     // In dev mode, check localStorage
     if (DEV_MODE) {
-      const token = localStorage.getItem("token");
-      const user = localStorage.getItem("user");
+      const token = storage.getItem<string>(STORAGE_KEYS.TOKEN);
+      const user = storage.getItem<AuthUserData>(STORAGE_KEYS.USER);
       if (token && user) {
-        return { token, user: JSON.parse(user) };
+        return { token, user };
       }
       return null;
     }
     
-    const response = await fetch(`${API_BASE_URL}/auth/session`);
-    if (!response.ok) {
-      return null;
-    }
-    return response.json();
+    const result = await apiRequest<{ token: string; user: AuthUserData }>(
+      "/auth/session"
+    );
+    return result.success && result.data ? result.data : null;
   },
 };
 

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { AuthUserData } from "@/types";
+import React, { createContext, useContext,  useState } from "react";
+import { AuthUserData } from "@/schemas";
 
 interface AuthData {
   token: string | null;
@@ -13,18 +13,31 @@ interface AuthContextType extends AuthData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<AuthUserData | undefined>(undefined);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  // Initialize from localStorage synchronously to avoid race condition
+  const getInitialToken = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token");
+    }
+    return null;
+  };
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (storedToken) setToken(storedToken);
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+  const getInitialUser = (): AuthUserData | undefined => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          return JSON.parse(storedUser);
+        } catch {
+          return undefined;
+        }
+      }
+    }
+    return undefined;
+  };
+
+  const [token, setToken] = useState<string | null>(getInitialToken);
+  const [user, setUser] = useState<AuthUserData | undefined>(getInitialUser);
 
   const saveAuth = (newToken: string, newUser?: AuthUserData) => {
     setToken(newToken);
@@ -49,9 +62,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+export const useAuth = (): AuthContextType => {
+  const context = useContext<AuthContextType | undefined>(AuthContext);
+  
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
 };
