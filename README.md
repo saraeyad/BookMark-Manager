@@ -7,16 +7,16 @@
 ## 1) عرض المشروع وهو شغال
 
 ### لوحة الإشارات المرجعية
-![Bookmark Manager Dashboard](./docs/demo-bookmarks.png)
+![Bookmark Manager Dashboard](./docs/demo-bookmarks.jpg)
 
 ### تسجيل الدخول
-![Login Page](./docs/demo-login.png)
+![Login Page](./docs/demo-login.jpg)
 
 ### البحث والفلترة
-![Search bookmarks](./docs/demo-search.png)
+![Search bookmarks](./docs/demo-search.jpg)
 
 ### إضافة Bookmark جديد
-![Add Bookmark Dialog](./docs/demo-add-bookmark.png)
+![Add Bookmark Dialog](./docs/demo-add-bookmark.jpg)
 
 ---
 
